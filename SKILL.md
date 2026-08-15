@@ -160,11 +160,20 @@ whenever you recompute or re-derive the chart with different inputs):
    confidence caveat as monthly, one level more specific.
 
 **Format items 6-8 as one short paragraph per life-area (or per notable
-transit for items 7-8), not a table.** Each paragraph leads with the finding
-first, then the reasoning that supports it - the update, then why, in that
-order, every time. Write the finding as a plain claim ("no dasha lord touches
-the 7th house" is itself a finding, not a gap to apologize for), then back it
-with the specific field it traces to.
+transit for items 7-8), not a table.** Each paragraph is two explicit parts,
+in this order, every time:
+1. **Prediction** - the plain-language forecast/theme for that area, written
+   as a direct sentence a non-astrologer can act on ("Expect purchases or
+   property matters to move faster than usual through late August" /
+   "No meaningful shift in this area from the current dasha"). This is still
+   bound by Step 6's honesty rules - a "no signal" area gets a plain
+   no-change prediction, not an invented one just to fill the slot.
+2. **Why** - the technical chain that produced it: which lord, which house,
+   which transit, which dates, in that order. This is where `rules_houses`,
+   dignity, and dates get cited.
+Label the two parts explicitly (e.g. "**Prediction:** ... **Why:** ...")
+so the forecast and the reasoning behind it are never run together in the
+same sentence.
 
 Hold every paragraph to this writing bar, no exceptions:
 - **Active voice, clear actor.** "Mars rules the 6th house" not "the 6th
