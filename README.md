@@ -82,6 +82,9 @@ One JSON object with:
 | `current_dasha` | Mahadasha/Antardasha/Pratyantardasha active right now (or at `--now`) |
 | `dasha_lookup` | Same, for the instant passed to `--dasha-lookup` |
 | `sade_sati_status` | Whether transiting Saturn is currently in Sade Sati or Ashtama Shani relative to natal Moon |
+| `sade_sati_full_timeline` | Every Sade Sati (Rising/Peak/Setting), Kantak Shani (4th from Moon), and Ashtama Shani (8th from Moon) phase for this person's whole life, with exact dates |
+| `mangal_dosha` | Whether Mars sits in 1st/2nd/4th/7th/8th/12th from Lagna or Moon (raw placement condition; classical cancellation rules aren't evaluated) |
+| `kalsarpa_dosha` | Whether all 7 classical grahas fall within one arc bounded by Rahu/Ketu, with the classical dosha name if present |
 | `current_transits` | Live planetary positions and the natal house each falls in |
 | `this_month_moon_calendar` / `this_month_fast_planets` | Moon's sign-by-sign path this month; Sun/Mercury/Venus/Mars sign changes this month |
 | `forward_<N>yr_house_transit_scan` | Every future Jupiter/Saturn/Rahu/Ketu sign-ingress date, tagged with the natal house it lands in |
@@ -91,13 +94,21 @@ One JSON object with:
 Known, deliberate gaps - ask for these to be added if you need them, rather
 than assuming a reading covers them:
 
-- D10 (Dasamsa/career), D7, D12, D60, or any divisional chart beyond D9
+- D2-D8, D10-D60, or any divisional chart beyond D9 (Dasamsa/career, D7
+  children, D12 parents, etc.)
 - Planetary aspects (drishti)
 - Classical yoga detection (Gajakesari, Neecha-bhanga, Raja/Dhana yogas,
-  Panch Mahapurusha, etc.)
-- Shadbala (strength scoring) or Ashtakavarga
+  Panch Mahapurusha, etc.) - Mangal Dosha and Kalsarpa Dosha ARE computed
+  (`mangal_dosha`, `kalsarpa_dosha`), but no other yoga/dosha detection is
+- Shadbala (strength scoring), Ashtakavarga, or Bhava Chalit (cusp-based)
+  houses - only Whole Sign houses are computed
 - Ghatak Chakra (malefic day/time timing technique) - `avkahada_chakra.ghatak_malefics`
   is `null` on purpose rather than a guess
+- Yogini Dasha, K.P. system (sub-lords), or Varshaphal (Solar Return/annual
+  chart) - only Vimshottari Dasha is computed
+- Lal Kitab as a predictive system (it has its own house/planetary-debt
+  rules this skill doesn't compute) - only its commonly-published per-graha
+  remedies are included, in `references/remedies.md`
 - Gemstone recommendations (deliberately excluded - see
   `references/remedies.md`; this needs an in-person practitioner)
 - Geocoding of place names or historical timezone lookup (by design - see

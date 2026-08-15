@@ -565,6 +565,89 @@ def compute_sade_sati_status(natal_moon_sign, transit_saturn_sign):
     return {'status': 'Not currently in Sade Sati or Ashtama Shani', 'ashtama_shani_sign': ashtama_sign}
 
 
+MANGAL_DOSHA_HOUSES = {1, 2, 4, 7, 8, 12}
+
+
+def compute_mangal_dosha(mars_house_from_lagna, mars_house_from_moon):
+    """Kuja/Mangal Dosha: Mars in 1st/2nd/4th/7th/8th/12th from Lagna or Moon.
+    Checked from Lagna and Moon only - the two references classical sources
+    agree on universally; some schools also check from Venus. Classical
+    cancellation (bhanga) rules exist (Mars in its own/exalted sign, benefic
+    aspects, etc.) and are numerous and inconsistent across sources, so
+    they're deliberately not evaluated here - a 'present: true' result means
+    the raw placement condition is met, not a final verdict."""
+    from_lagna = mars_house_from_lagna in MANGAL_DOSHA_HOUSES
+    from_moon = mars_house_from_moon in MANGAL_DOSHA_HOUSES
+    return {
+        'present': from_lagna or from_moon,
+        'present_from_lagna': from_lagna,
+        'present_from_moon': from_moon,
+        'mars_house_from_lagna': mars_house_from_lagna,
+        'mars_house_from_moon': mars_house_from_moon,
+        'note': ('Raw placement condition only - classical cancellation (bhanga) rules '
+                 '(e.g. Mars in own/exalted sign, benefic aspects) are not evaluated.'),
+    }
+
+
+KALSARPA_TYPE_BY_RAHU_HOUSE = ['Anant', 'Kulik', 'Vasuki', 'Shankhpal', 'Padma', 'Mahapadma',
+                                'Takshak', 'Karkotak', 'Shankhachur', 'Ghatak', 'Vishdhar', 'Sheshnag']
+
+
+def compute_kalsarpa_dosha(classical_planet_longitudes, rahu_lon, ketu_lon, rahu_house_from_lagna):
+    """Kalsarpa Dosha: all 7 classical grahas fall within one of the two
+    180-degree arcs bounded by Rahu and Ketu, with none on the other side."""
+    def in_arc(lon, start, end):
+        span = (end - start) % 360
+        pos = (lon - start) % 360
+        return pos <= span
+
+    all_in_rahu_to_ketu = all(in_arc(lon, rahu_lon, ketu_lon) for lon in classical_planet_longitudes.values())
+    all_in_ketu_to_rahu = all(in_arc(lon, ketu_lon, rahu_lon) for lon in classical_planet_longitudes.values())
+    present = all_in_rahu_to_ketu or all_in_ketu_to_rahu
+    return {
+        'present': present,
+        'type': KALSARPA_TYPE_BY_RAHU_HOUSE[rahu_house_from_lagna - 1] if present else None,
+    }
+
+
+SATURN_MOON_PHASE_BY_HOUSE = {
+    12: 'Sade Sati - Rising', 1: 'Sade Sati - Peak', 2: 'Sade Sati - Setting',
+    4: 'Kantak Shani', 8: 'Ashtama Shani',
+}
+
+
+def compute_sade_sati_full_timeline(natal_moon_sign, birth_jd, years_span=100, step_days=2.0):
+    """Full-life Saturn-from-Moon timeline: every Sade Sati (12th/1st/2nd
+    from natal Moon), Kantak Shani (4th), and Ashtama Shani (8th) phase from
+    birth through birth + years_span, with exact start/end dates. Reuses
+    scan_sign_ingress with the natal Moon sign as the reference point instead
+    of the Lagna - the 'house_from_natal_lagna' key in its output is really
+    'house from natal Moon' in this call, relabeled below.
+
+    Scans from 3 years before birth (longer than Saturn's max stay in one
+    sign) so a phase already under way at birth reports its true start date
+    rather than being truncated at the birth date, then drops any phase that
+    fully ended before birth."""
+    birth_iso = jd_to_iso(birth_jd)[:10]
+    jd_start = birth_jd - 3 * 365.2425
+    jd_end = birth_jd + years_span * 365.2425
+    events = scan_sign_ingress('Saturn', jd_start, jd_end, natal_moon_sign, step_days=step_days)
+    timeline = []
+    for i, ev in enumerate(events):
+        house_from_moon = ev['house_from_natal_lagna']
+        phase = SATURN_MOON_PHASE_BY_HOUSE.get(house_from_moon)
+        end = events[i + 1]['date'] if i + 1 < len(events) else None
+        if phase and (end is None or end > birth_iso):
+            timeline.append({
+                'phase': phase,
+                'saturn_sign': ev['enters_sign'],
+                'house_from_natal_moon': house_from_moon,
+                'start': ev['date'],
+                'end': end,
+            })
+    return timeline
+
+
 def compute_panchang(jd_ut, sun_lon, moon_lon):
     diff = (moon_lon - sun_lon) % 360
     tithi_num = int(diff // 12) + 1  # 1..30
@@ -656,6 +739,8 @@ def main():
     ap.add_argument('--place', default='')
     ap.add_argument('--forward-years', type=int, default=8,
                      help='years to forward-scan Jupiter/Saturn/Rahu/Ketu house transits')
+    ap.add_argument('--sade-sati-years', type=int, default=100,
+                     help='years from birth to scan for the full Sade Sati/Kantak Shani/Ashtama Shani timeline')
     ap.add_argument('--now', default=None,
                      help='override "current" instant as ISO YYYY-MM-DDTHH:MM in UTC (default: real now)')
     ap.add_argument('--dasha-lookup', default=None,
@@ -688,6 +773,15 @@ def main():
     karakas = compute_chara_karakas(natal['planets'])
     transits_now = compute_current_transits(jd_now, lagna_sign)
     sade_sati = compute_sade_sati_status(natal_moon_sign, transits_now['Saturn']['sign'])
+    sade_sati_timeline = compute_sade_sati_full_timeline(natal_moon_sign, birth_jd, years_span=args.sade_sati_years)
+
+    mars_house_from_moon = house_from_lagna(natal['planets']['Mars']['sign'], natal_moon_sign)
+    mangal_dosha = compute_mangal_dosha(natal['planets']['Mars']['house_from_lagna'], mars_house_from_moon)
+
+    classical_lons = {name: natal['planets'][name]['longitude'] for name in CLASSICAL_ORDER}
+    kalsarpa_dosha = compute_kalsarpa_dosha(
+        classical_lons, natal['planets']['Rahu']['longitude'], natal['planets']['Ketu']['longitude'],
+        natal['planets']['Rahu']['house_from_lagna'])
 
     y_now, m_now, d_now, _ = swe.revjul(jd_now)
     moon_month = compute_moon_month_calendar(y_now, m_now, lagna_sign)
@@ -713,6 +807,9 @@ def main():
         'vimshottari_dasha_timeline': dasha_timeline,
         'current_dasha': current_dasha,
         'sade_sati_status': sade_sati,
+        'sade_sati_full_timeline': sade_sati_timeline,
+        'mangal_dosha': mangal_dosha,
+        'kalsarpa_dosha': kalsarpa_dosha,
         'current_transits': transits_now,
         'this_month_moon_calendar': moon_month,
         'this_month_fast_planets': fast_month,

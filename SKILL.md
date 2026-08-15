@@ -106,6 +106,20 @@ Then read the JSON (`Read` the `--out` file, or capture stdout if you omit
 - `sade_sati_status` - whether transiting Saturn is currently in the
   Sade Sati window (12th/1st/2nd from natal Moon) or Ashtama Shani (8th from
   natal Moon), computed from real current Saturn position.
+- `sade_sati_full_timeline` - every Sade Sati (Rising/Peak/Setting),
+  Kantak Shani (4th from Moon), and Ashtama Shani (8th from Moon) phase for
+  this person's whole life (birth minus a 3-year buffer, so a phase already
+  under way at birth shows its true start, through `--sade-sati-years` years
+  ahead, default 100), each with exact start/end dates. Cross-checked against
+  a real AstroSage Sadesati Report for one chart and matched to the day.
+- `mangal_dosha` - whether Mars sits in 1st/2nd/4th/7th/8th/12th from Lagna
+  or Moon. `present: true` is the raw placement condition only - classical
+  cancellation (bhanga) rules are numerous and inconsistent across sources
+  and aren't evaluated, so say that explicitly rather than treating a
+  `true` as a final verdict.
+- `kalsarpa_dosha` - whether all 7 classical grahas fall within one of the
+  two arcs bounded by Rahu/Ketu, with the classical dosha name (Anant,
+  Kulik, etc., by Rahu's house) when present.
 - `current_transits` - where every planet is right now, and which natal house
   (from the Lagna) that falls in.
 - `this_month_moon_calendar` / `this_month_fast_planets` - Moon's sign-by-sign
@@ -114,9 +128,11 @@ Then read the JSON (`Read` the `--out` file, or capture stdout if you omit
   Jupiter, Saturn, Rahu, Ketu, each tagged with the natal house it lands in.
 
 If a question needs something not in this JSON (e.g. a future year outside
-`--forward-years` - just rerun with a bigger value - or a D10/D7/D12 chart,
-planetary aspects, or yoga detection, none of which are implemented), say so
-and extend `astro_calc.py` with a new function rather than estimating by hand.
+`--forward-years` - just rerun with a bigger value - or a D2-D8/D10-D60
+divisional chart beyond D9, planetary aspects, Ashtakvarga, Bhava Chalit
+houses, Ghatak Chakra, or yoga detection, none of which are implemented),
+say so and extend `astro_calc.py` with a new function rather than estimating
+by hand.
 
 ## Step 5 - Always print the standard summary before interpreting
 
@@ -132,16 +148,26 @@ whenever you recompute or re-derive the chart with different inputs):
    section, labeled the way that section's comment describes. Explicitly
    note that `Ghatak (Malefics)` is not implemented rather than omitting it
    silently.
-4. **The D1 chart and the D9 (Navamsa) chart**, both - rendered with:
+4. **The D1 chart and the D9 (Navamsa) chart**, both - actually run:
    ```bash
    python3 scripts/render_chart.py --chart /tmp/chart.json --style north --divisional d1
    python3 scripts/render_chart.py --chart /tmp/chart.json --style north --divisional d9
    ```
-   (`--style south` if that's the user's stated preference per Step 2).
+   (`--style south` if that's the user's stated preference per Step 2), and
+   paste the literal ASCII output in a code block. **A prose summary of
+   which planet is in which house is not a substitute for the rendered
+   diagram** - if you catch yourself typing "Ascendant: Gemini | Sun: Libra
+   (H5) | ..." instead of running the command, stop and run it.
 5. **The Dasha** - the full Mahadasha timeline (table form is fine) and the
    `current_dasha` (Mahadasha/Antardasha/Pratyantardasha), clearly marked as
    "current."
-6. **Current Dasha theme** - run the current Mahadasha-Antardasha-
+6. **Dosha and Sade Sati report** - `mangal_dosha` and `kalsarpa_dosha`
+   status (with their caveats, per Step 4's field descriptions), and the
+   full `sade_sati_full_timeline` as a table (phase, sign, start, end) -
+   mark whichever entry (if any) contains today's date as "current." If
+   `mangal_dosha.present` is true, this is also the point to mention that
+   Step 7's remedies reference has a dedicated Mangal Dosha protocol.
+7. **Current Dasha theme** - run the current Mahadasha-Antardasha-
    Pratyantardasha stack through Step 6's **Life-area coverage checklist**
    (health, wealth, money/income, job, business, relationship, legal
    settlement, big purchases, relocation). This is genuine interpretation, so
@@ -149,18 +175,18 @@ whenever you recompute or re-derive the chart with different inputs):
    Mahadasha/Antardasha level, **Speculative** at Pratyantardasha - and every
    claim must trace to a real placement (`rules_houses`, dignity,
    `house_from_lagna`), not a generic "this planet means X" statement.
-7. **This month** - a short thematic read of `this_month_moon_calendar` and
+8. **This month** - a short thematic read of `this_month_moon_calendar` and
    `this_month_fast_planets` (which signs/houses the Moon and any fast
    planets move through this month). Per Step 6, this is the **lowest**-
    confidence layer - texture, not events.
-8. **Today** - the single most specific layer: today's date's position in
+9. **Today** - the single most specific layer: today's date's position in
    `this_month_moon_calendar` (which sign/house the Moon is in today) plus
    `current_transits` for any planet that changed sign today per
    `this_month_fast_planets`. Frame as thematic texture for the day, same
    confidence caveat as monthly, one level more specific.
 
-**Format items 6-8 as one short paragraph per life-area (or per notable
-transit for items 7-8), not a table.** Each paragraph is two explicit parts,
+**Format items 7-9 as one short paragraph per life-area (or per notable
+transit for items 8-9), not a table.** Each paragraph is two explicit parts,
 in this order, every time:
 1. **Prediction** - plain, simple language a non-astrologer would use in
    conversation, not a literary or business-jargon rewrite of the same idea.
@@ -193,13 +219,13 @@ Hold every paragraph to this writing bar, no exceptions:
   one. If a life-area genuinely has nothing behind it, one sentence saying so
   is the whole paragraph.
 
-Only after all eight are printed should you move on to answering whatever
+Only after all nine are printed should you move on to answering whatever
 else the user actually asked (a life-events audit, a specific question,
 remedies, etc.) per Step 6. If the user asks a narrow follow-up in an
 existing conversation where this summary was already printed for the same
 chart, you don't need to reprint it - only reprint after a genuinely
 new/changed calculator run. If asked again later in the same day for
-"today's" reading specifically, items 6-8 are the ones that can go stale
+"today's" reading specifically, items 7-9 are the ones that can go stale
 fastest (dasha almost never within a conversation, but "today" the moment
 the date rolls over) - recompute with a fresh `--now`-less run if there's
 any doubt the data is still current.
@@ -272,20 +298,24 @@ line just to fill the section.
 ## Step 7 - Remedies (Upaya), mantra, and why
 
 `references/remedies.md` is the remedy knowledge base - Read it rather than
-generating upaya/mantra from memory. For each of the 9 grahas plus a
-Sade Sati/Ashtama Shani protocol, it gives: when the remedy is actually
-relevant, the upaya itself (donation items, day, deity, practice), a mantra,
-and a **why** - the classical reasoning connecting the remedy to the planet's
-signification, not just the remedy in isolation.
+generating upaya/mantra from memory. For each of the 9 grahas, plus a
+Sade Sati/Ashtama Shani protocol, a Mangal Dosha protocol, and a
+supplementary Lal Kitab per-graha remedy table, it gives: when the remedy is
+actually relevant, the upaya itself (donation items, day, deity, practice), a
+mantra, and a **why** - the classical reasoning connecting the remedy to the
+planet's signification, not just the remedy in isolation.
 
 Selection rule (also stated in that file, worth repeating): don't hand the
 user all nine grahas' remedies. Pick 2-4, prioritized by (1) the current
 Mahadasha/Antardasha lord, (2) any planet that's debilitated, combust, or in
-the 6th/8th/12th, (3) an active `sade_sati_status`, (4) whatever the user's
-actual question is about. Always restate the file's disclaimer in your own
-words - traditional practice, not a guaranteed fix, not a substitute for
-medical/legal/financial/mental-health care - and never generate a specific
-gemstone recommendation; point to an in-person practitioner for that.
+the 6th/8th/12th, (3) an active `sade_sati_status` or `mangal_dosha.present`,
+(4) whatever the user's actual question is about. Always restate the file's
+disclaimer in your own words - traditional practice, not a guaranteed fix,
+not a substitute for medical/legal/financial/mental-health care - and never
+generate a specific gemstone recommendation; point to an in-person
+practitioner for that. The Lal Kitab table is a distinct sub-tradition with
+its own house/debt framework this skill doesn't compute - offer it as a
+supplementary set, not as output of a Lal Kitab-specific calculation.
 
 ## Troubleshooting and robustness
 

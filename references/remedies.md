@@ -305,6 +305,64 @@ one-time act:
 
 ---
 
+## Mangal Dosha (Kuja Dosha) protocol
+
+When `mangal_dosha.present` is true, classical guidance for marriage-related
+concerns specifically (this dosha's traditional domain) converges on:
+
+**Before marriage:**
+- Kumbh Vivah (also called Ghata Vivaha) - a symbolic marriage to a clay pot,
+  then breaking it.
+- Ashwatha Vivah - a symbolic marriage to a peepal or banana tree, then
+  cutting it.
+- The classical claim that a Manglik marrying another Manglik cancels the
+  dosha for both - state this as the tradition's own claim, not a verified
+  outcome.
+
+**After marriage:**
+- Keep a Kesariya (orange) Ganesha idol in the worship room and worship daily.
+- Recite the Hanuman Chalisa.
+- Mahamrityunjaya mantra recitation.
+
+**Lal Kitab tradition, after marriage:**
+- Feed birds something sweet.
+- Keep ivory (Haathi Daant) at home.
+- Worship a banyan tree with milk mixed with something sweet.
+
+Always state the `mangal_dosha` caveat explicitly: this is the raw placement
+condition (Mars in 1st/2nd/4th/7th/8th/12th from Lagna or Moon), not a final
+verdict - classical cancellation rules exist and aren't evaluated by the
+script, so a practitioner review matters more here than for most remedies.
+
+---
+
+## Lal Kitab remedies (supplementary)
+
+Lal Kitab is a distinct astrological sub-tradition with its own house-lord
+and planetary-debt (rin) framework that this skill does not compute - what
+follows are commonly-published per-graha Lal Kitab remedies, offered as a
+supplementary set alongside the main remedies above, not as output of a
+Lal Kitab-specific calculation.
+
+| Graha | Common Lal Kitab remedy |
+|---|---|
+| Sun | Offer water to the sun; donate wheat or jaggery on Sunday; maintain a good relationship with one's father |
+| Moon | Donate rice, milk, or silver on Monday; keep silver at home; maintain a good relationship with one's mother |
+| Mars | Donate red lentils (masoor) or jaggery; maintain a good relationship with younger siblings |
+| Mercury | Donate green items or green fodder for cows; maintain a good relationship with sisters |
+| Jupiter | Donate turmeric or yellow items; respect teachers and elders; a peepal tree connection (watering, not cutting) |
+| Venus | Donate white items or perfume; respect women in the household; keeping a cow at home is a traditional association |
+| Saturn | Donate iron, black items, or mustard oil to the poor or laborers directly; feed crows |
+| Rahu | Donate blankets or multi-grain items; feed a black dog |
+| Ketu | Donate sesame; keeping a dog at home is a traditional association; maintain a good relationship with grandparents |
+
+Same disclaimer as the rest of this file applies, doubly so here since Lal
+Kitab remedies are sometimes presented with more folk-certainty than their
+Parashari counterparts - restate that these are traditional practice, not
+verified outcomes.
+
+---
+
 ## General principles (repeat these to the user)
 
 - Tie remedies to what's actually weak, afflicted, or currently active in
