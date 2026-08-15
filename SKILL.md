@@ -162,12 +162,17 @@ whenever you recompute or re-derive the chart with different inputs):
 **Format items 6-8 as one short paragraph per life-area (or per notable
 transit for items 7-8), not a table.** Each paragraph is two explicit parts,
 in this order, every time:
-1. **Prediction** - the plain-language forecast/theme for that area, written
-   as a direct sentence a non-astrologer can act on ("Expect purchases or
-   property matters to move faster than usual through late August" /
-   "No meaningful shift in this area from the current dasha"). This is still
-   bound by Step 6's honesty rules - a "no signal" area gets a plain
-   no-change prediction, not an invented one just to fill the slot.
+1. **Prediction** - plain, simple language a non-astrologer would use in
+   conversation, not a literary or business-jargon rewrite of the same idea.
+   It can run to a full paragraph if there's real content to cover - length
+   isn't the problem, word choice is. Say the ordinary word for the thing
+   ("health," "money," "buying a car or property") instead of a metaphor for
+   it ("front-of-mind," "volatility," "tailwind," "window of momentum"). Say
+   what to watch for or do, not an abstract description of the energy.
+   Prefer "This is a good time to buy a car or property" over "This is your
+   strongest window for a purchase." This is still bound by Step 6's honesty
+   rules - a "no signal" area gets a plain no-change prediction ("No change
+   expected here"), not an invented one just to fill the slot.
 2. **Why** - the technical chain that produced it: which lord, which house,
    which transit, which dates, in that order. This is where `rules_houses`,
    dignity, and dates get cited.
