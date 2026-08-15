@@ -144,14 +144,11 @@ whenever you recompute or re-derive the chart with different inputs):
 6. **Current Dasha theme** - run the current Mahadasha-Antardasha-
    Pratyantardasha stack through Step 6's **Life-area coverage checklist**
    (health, wealth, money/income, job, business, relationship, legal
-   settlement, big purchases, relocation) rather than one generic paragraph.
-   For each area, say whether the current dasha lords occupy or rule its
-   house(s), and note explicitly where there's no signal instead of skipping
-   it silently. This is genuine interpretation, so it follows Step 6's rules
-   in full - **Moderate** confidence at the Mahadasha/Antardasha level,
-   **Speculative** at Pratyantardasha - and every claim must trace to a real
-   placement (`rules_houses`, dignity, `house_from_lagna`), not a generic
-   "this planet means X" statement.
+   settlement, big purchases, relocation). This is genuine interpretation, so
+   it follows Step 6's rules in full - **Moderate** confidence at the
+   Mahadasha/Antardasha level, **Speculative** at Pratyantardasha - and every
+   claim must trace to a real placement (`rules_houses`, dignity,
+   `house_from_lagna`), not a generic "this planet means X" statement.
 7. **This month** - a short thematic read of `this_month_moon_calendar` and
    `this_month_fast_planets` (which signs/houses the Moon and any fast
    planets move through this month). Per Step 6, this is the **lowest**-
@@ -161,6 +158,15 @@ whenever you recompute or re-derive the chart with different inputs):
    `current_transits` for any planet that changed sign today per
    `this_month_fast_planets`. Frame as thematic texture for the day, same
    confidence caveat as monthly, one level more specific.
+
+**Format items 6-8 as an executive summary, not prose paragraphs**: lead
+with 2-3 sentences of headline takeaway, then a table - one row per
+life-area (for item 6) or per notable transit (for items 7-8) - with columns
+`Area | Current signal | Confidence`. Keep each cell to a short phrase (house
++ lord + what's touching it), not the full chain of reasoning. State "no
+signal" as a normal one-line row, not an apologetic aside. Offer the full
+reasoning behind any specific row if asked, rather than including it by
+default - the summary's job is to be scannable first.
 
 Only after all eight are printed should you move on to answering whatever
 else the user actually asked (a life-events audit, a specific question,
