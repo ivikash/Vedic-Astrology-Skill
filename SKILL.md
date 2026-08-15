@@ -141,15 +141,17 @@ whenever you recompute or re-derive the chart with different inputs):
 5. **The Dasha** - the full Mahadasha timeline (table form is fine) and the
    `current_dasha` (Mahadasha/Antardasha/Pratyantardasha), clearly marked as
    "current."
-6. **Current Dasha theme** - a short interpretive paragraph (not just dates)
-   on what the *current* Mahadasha-Antardasha-Pratyantardasha stack means for
-   this chart specifically: what each of those three lords signifies, tie it
-   to the houses/signs they actually occupy or rule natally (`rules_houses`,
-   dignity, `house_from_lagna`), and say what that combination is thematically
-   pointing at right now. This is genuine interpretation, so it follows Step
-   6's rules in full - **Moderate** confidence at the Mahadasha/Antardasha
-   level, **Speculative** at Pratyantardasha - and must trace every claim to
-   a real placement, not a generic "this planet means X" statement.
+6. **Current Dasha theme** - run the current Mahadasha-Antardasha-
+   Pratyantardasha stack through Step 6's **Life-area coverage checklist**
+   (health, wealth, money/income, job, business, relationship, legal
+   settlement, big purchases, relocation) rather than one generic paragraph.
+   For each area, say whether the current dasha lords occupy or rule its
+   house(s), and note explicitly where there's no signal instead of skipping
+   it silently. This is genuine interpretation, so it follows Step 6's rules
+   in full - **Moderate** confidence at the Mahadasha/Antardasha level,
+   **Speculative** at Pratyantardasha - and every claim must trace to a real
+   placement (`rules_houses`, dignity, `house_from_lagna`), not a generic
+   "this planet means X" statement.
 7. **This month** - a short thematic read of `this_month_moon_calendar` and
    `this_month_fast_planets` (which signs/houses the Moon and any fast
    planets move through this month). Per Step 6, this is the **lowest**-
@@ -203,6 +205,38 @@ you produce from this skill's output:
   say so directly rather than forcing a false-precision answer.
 - **Treat astrology as an interpretive tradition, not a proven predictive
   science**, and say so when giving readings, especially remedies (upay).
+
+### Life-area coverage checklist
+
+When asked for an elaborate reading (or whenever doing the Step 5 item 6-8
+predictions in full), walk through every relevant area below rather than
+writing one generic paragraph. For each area: identify its house(s)/karaka,
+then check whether the *current* dasha lords (Mahadasha/Antardasha/
+Pratyantardasha) occupy or rule that house, and whether `current_transits`
+currently touches it - state the finding either way, including **"no strong
+signal from the current dasha/transits for this area"** when that's true.
+Silence on an area someone asked about reads as "I forgot it"; an explicit
+no-signal statement is the honest version of covering it.
+
+| Life area | Houses / karakas |
+|---|---|
+| Health | 6th house (disease), 8th house (chronic/longevity), Lagna + Lagna lord (vitality), Moon (mind) |
+| Wealth / savings | 2nd house (accumulated wealth, family resources), its lord |
+| Money / income flow | 11th house (gains, income), its lord |
+| Job / employment | 10th house (career, status), 6th house (service specifically), 10th lord |
+| Business | 7th house (trade/partnership) with 10th (career) and 3rd (self-effort); 11th for gains |
+| Relationship / marriage | 7th house, Venus, Jaimini Darakaraka, 7th lord |
+| Legal settlement / disputes | 6th (litigation), 8th (complications), 12th (losses/settlement), 7th (the other party in a contract) |
+| New purchases (vehicle, big-ticket) | 4th house (property/vehicle/comfort), 11th (fulfillment of desire funding it) |
+| Relocation / travel | 3rd (short travel), 4th (change of residence), 9th (long-distance), 12th (foreign land/settling abroad) |
+
+This checklist is classical significations, not a new calculation - every
+finding still has to trace to a real field (`rules_houses`, `house_from_lagna`,
+`current_transits`, dignity) per the Never Invent rule above. If the natal
+chart or current dasha genuinely has nothing to say about an area (e.g. no
+dasha lord touches the 7th and no transit is there either), that's the
+honest answer for that area - don't manufacture a generic Venus-means-love
+line just to fill the section.
 
 ## Step 7 - Remedies (Upaya), mantra, and why
 
