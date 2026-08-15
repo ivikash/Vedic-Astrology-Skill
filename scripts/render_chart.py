@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """
 Render a D1 (Rasi) or D9 (Navamsa) chart from astro_calc.py's JSON output as
-an ASCII diagram, in either North Indian (house-fixed diamond) or South
-Indian (sign-fixed grid) style.
+an ASCII grid, in either North Indian (house-fixed) or South Indian
+(sign-fixed) style. Both use the same straight-box grid layout for rendering
+robustness - North Indian keeps house 1 fixed to the top-left cell with
+signs rotating around it per the Ascendant; South Indian keeps each sign
+fixed to its cell with houses rotating instead.
 
 This does no astrology math of its own - it only lays out planets/signs that
-astro_calc.py already computed, at positions derived from exact geometry (see
-the North Indian vertex derivation in HOUSE_POLYGONS below), not hand-drawn
-ASCII art.
+astro_calc.py already computed.
 """
 import argparse
 import json
@@ -127,100 +128,47 @@ def render_south(chart, divisional, title):
     return '\n'.join(lines)
 
 
-# ---------- North Indian (house-fixed diamond) ----------
-# Exact geometry on a 16x16 unit square (see conversation derivation): 2 main
-# diagonals + inner diamond (side-midpoint quadrilateral) split it into 12
-# regions - houses 1/4/7/10 are 4-vertex kites at the cardinal points, the
-# other 8 are corner triangles.
-#
-# Real North Indian charts (verified against an AstroSage panel) print the
-# RASHI NUMBER (1=Aries..12=Pisces) of whichever sign occupies each house
-# near the region's center-ward tip, and planet abbreviations further out
-# toward its outer (square-border) edge - not both stacked at the centroid,
-# and with no separate "ASC" text (house 1 is always the fixed top region by
-# convention). OUTER_ANCHOR is each region's own border-touching vertex/
-# vertices (a side-midpoint for the 4 kite houses; the average of a square
-# corner + adjacent side-midpoint for the 8 triangle houses).
-CENTER = (8, 8)
-OUTER_ANCHOR = {
-    1: (0, 8), 2: (0, 12), 3: (4, 16), 4: (8, 16), 5: (12, 16),
-    6: (16, 12), 7: (16, 8), 8: (16, 4), 9: (12, 0), 10: (8, 0),
-    11: (4, 0), 12: (0, 4),
-}
-
-
-def _lerp(a, b, t):
-    return (a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t)
-
-
-NUMBER_POS = {h: _lerp(CENTER, OUTER_ANCHOR[h], 0.25) for h in range(1, 13)}
-PLANET_POS = {h: _lerp(CENTER, OUTER_ANCHOR[h], 0.65) for h in range(1, 13)}
-UNIT = 16
-ROW_SCALE = 1
-COL_SCALE = 3
-ROWS = UNIT * ROW_SCALE + 1
-COLS = UNIT * COL_SCALE + 1
-
-
-def _fam_a(row, col):
-    return row - col
-
-
-def _fam_b(row, col):
-    return row + col
-
-
-_LINES = [
-    (_fam_a, 0, '\\'), (_fam_a, -8, '\\'), (_fam_a, 8, '\\'),
-    (_fam_b, 16, '/'), (_fam_b, 24, '/'), (_fam_b, 8, '/'),
+# ---------- North Indian (house-fixed block grid) ----------
+# A true North Indian chart is a diamond, but diagonal ASCII art breaks under
+# almost any font/width mismatch (verified: it kept rendering wrong across
+# multiple attempts). This keeps the actual North Indian semantic - house
+# number is fixed to a grid position, the sign rotates around it based on
+# the Ascendant - but draws it with the same robust straight-box style as
+# the South Indian grid. House 1 starts at the top-left cell and houses run
+# clockwise around the ring, same traversal order as SOUTH_GRID.
+NORTH_GRID = [
+    [1, 2, 3, 4],
+    [12, None, None, 5],
+    [11, None, None, 6],
+    [10, 9, 8, 7],
 ]
 
 
 def render_north(chart, divisional, title):
     lagna_sign, houses, house_key, sign_key = build_house_contents(chart, divisional)
 
-    grid = [[' '] * COLS for _ in range(ROWS)]
-    for R in range(ROWS):
-        for C in range(COLS):
-            row, col = R / ROW_SCALE, C / COL_SCALE
-            if row <= 0.001 or row >= UNIT - 0.001 or col <= 0.001 or col >= UNIT - 0.001:
-                is_corner = (row <= 0.001 or row >= UNIT - 0.001) and (col <= 0.001 or col >= UNIT - 0.001)
-                if is_corner:
-                    grid[R][C] = '+'
-                elif row <= 0.001 or row >= UNIT - 0.001:
-                    grid[R][C] = '-'
-                else:
-                    grid[R][C] = '|'
+    cellw = 13
+    lines = [title, '']
+    border = '+' + ('-' * cellw + '+') * 4
+    lines.append(border)
+    for row in NORTH_GRID:
+        line1 = '|'
+        line2 = '|'
+        for h in row:
+            if h is None:
+                line1 += ' ' * cellw + '|'
+                line2 += ' ' * cellw + '|'
                 continue
-            best = None
-            for f, target, ch in _LINES:
-                d = abs(f(row, col) - target)
-                if best is None or d < best[0]:
-                    best = (d, ch)
-            if best[0] < 0.13:
-                grid[R][C] = best[1]
-
-    def place(text, r, c):
-        R = round(r * ROW_SCALE)
-        C = round(c * COL_SCALE) - len(text) // 2
-        for i, ch in enumerate(text):
-            cc = C + i
-            if 0 <= R < ROWS and 0 <= cc < COLS:
-                grid[R][cc] = ch
-
-    for h in range(1, 13):
-        sign = sign_for_house(lagna_sign, h)
-        nr, nc = NUMBER_POS[h]
-        place(str(SIGNS.index(sign) + 1), nr, nc)
-        if houses[h]:
-            pr, pc = PLANET_POS[h]
-            lines = [','.join(houses[h][i:i + 2]) for i in range(0, len(houses[h]), 2)]
-            for i, line in enumerate(lines):
-                place(line, pr + (i - (len(lines) - 1) / 2) * 0.9, pc)
-
-    body = '\n'.join(''.join(row) for row in grid)
-    lagna_line = f"House 1 (Lagna/Ascendant) = {lagna_sign} (rashi {SIGNS.index(lagna_sign) + 1})"
-    return title + '\n' + lagna_line + '\n\n' + body
+            sign = sign_for_house(lagna_sign, h)
+            marker = ' ASC' if h == 1 else ''
+            top = f" H{h} {SIGN3[sign]}{marker}"
+            planets = ','.join(houses[h])
+            line1 += top.ljust(cellw) + '|'
+            line2 += (' ' + planets).ljust(cellw) + '|'
+        lines.append(line1)
+        lines.append(line2)
+        lines.append(border)
+    return '\n'.join(lines)
 
 
 def main():
