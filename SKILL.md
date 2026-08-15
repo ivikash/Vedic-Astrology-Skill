@@ -141,13 +141,35 @@ whenever you recompute or re-derive the chart with different inputs):
 5. **The Dasha** - the full Mahadasha timeline (table form is fine) and the
    `current_dasha` (Mahadasha/Antardasha/Pratyantardasha), clearly marked as
    "current."
+6. **Current Dasha theme** - a short interpretive paragraph (not just dates)
+   on what the *current* Mahadasha-Antardasha-Pratyantardasha stack means for
+   this chart specifically: what each of those three lords signifies, tie it
+   to the houses/signs they actually occupy or rule natally (`rules_houses`,
+   dignity, `house_from_lagna`), and say what that combination is thematically
+   pointing at right now. This is genuine interpretation, so it follows Step
+   6's rules in full - **Moderate** confidence at the Mahadasha/Antardasha
+   level, **Speculative** at Pratyantardasha - and must trace every claim to
+   a real placement, not a generic "this planet means X" statement.
+7. **This month** - a short thematic read of `this_month_moon_calendar` and
+   `this_month_fast_planets` (which signs/houses the Moon and any fast
+   planets move through this month). Per Step 6, this is the **lowest**-
+   confidence layer - texture, not events.
+8. **Today** - the single most specific layer: today's date's position in
+   `this_month_moon_calendar` (which sign/house the Moon is in today) plus
+   `current_transits` for any planet that changed sign today per
+   `this_month_fast_planets`. Frame as thematic texture for the day, same
+   confidence caveat as monthly, one level more specific.
 
-Only after all five are printed should you move on to answering whatever the
-user actually asked (a life-events audit, a specific question, remedies,
-etc.) per Step 6. If the user asks a narrow follow-up in an existing
-conversation where this summary was already printed for the same chart,
-you don't need to reprint it - only reprint after a genuinely new/changed
-calculator run.
+Only after all eight are printed should you move on to answering whatever
+else the user actually asked (a life-events audit, a specific question,
+remedies, etc.) per Step 6. If the user asks a narrow follow-up in an
+existing conversation where this summary was already printed for the same
+chart, you don't need to reprint it - only reprint after a genuinely
+new/changed calculator run. If asked again later in the same day for
+"today's" reading specifically, items 6-8 are the ones that can go stale
+fastest (dasha almost never within a conversation, but "today" the moment
+the date rolls over) - recompute with a fresh `--now`-less run if there's
+any doubt the data is still current.
 
 ## Step 6 - Interpret, honestly
 
