@@ -156,8 +156,8 @@ def _lerp(a, b, t):
 NUMBER_POS = {h: _lerp(CENTER, OUTER_ANCHOR[h], 0.25) for h in range(1, 13)}
 PLANET_POS = {h: _lerp(CENTER, OUTER_ANCHOR[h], 0.65) for h in range(1, 13)}
 UNIT = 16
-ROW_SCALE = 2
-COL_SCALE = 4
+ROW_SCALE = 1
+COL_SCALE = 3
 ROWS = UNIT * ROW_SCALE + 1
 COLS = UNIT * COL_SCALE + 1
 
