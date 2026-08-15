@@ -83,6 +83,136 @@ VARA_NAMES = ['Somavara (Monday)', 'Mangalavara (Tuesday)', 'Budhavara (Wednesda
               'Guruvara (Thursday)', 'Shukravara (Friday)', 'Shanivara (Saturday)',
               'Ravivara (Sunday)']
 
+PLANET_ABBR = {'Sun': 'Sun', 'Moon': 'Moo', 'Mars': 'Mar', 'Mercury': 'Mer',
+               'Jupiter': 'Jup', 'Venus': 'Ven', 'Saturn': 'Sat', 'Rahu': 'Rah',
+               'Ketu': 'Ket'}
+
+# Ashtakoot-style nakshatra classifications (Varna/Vasya are by Moon's Rashi;
+# Yoni/Gana/Nadi are by Moon's Nakshatra). Standard classical tables used for
+# guna-milan matching, reused here since they're the same tables AstroSage-style
+# "Avkahada Chakra" panels report. Not central to a life-events reading -
+# supplementary classification, offered as-is from the classical lists.
+YONI_BY_NAKSHATRA = {
+    'Ashwini': 'Horse', 'Bharani': 'Elephant', 'Krittika': 'Goat',
+    'Rohini': 'Serpent', 'Mrigashira': 'Serpent', 'Ardra': 'Dog',
+    'Punarvasu': 'Cat', 'Pushya': 'Goat', 'Ashlesha': 'Cat',
+    'Magha': 'Rat', 'Purva Phalguni': 'Rat', 'Uttara Phalguni': 'Cow',
+    'Hasta': 'Buffalo', 'Chitra': 'Tiger', 'Swati': 'Buffalo',
+    'Vishakha': 'Tiger', 'Anuradha': 'Mriga', 'Jyeshtha': 'Mriga',
+    'Mula': 'Dog', 'Purva Ashadha': 'Monkey', 'Uttara Ashadha': 'Nakula',
+    'Shravana': 'Monkey', 'Dhanishta': 'Lion', 'Shatabhisha': 'Horse',
+    'Purva Bhadrapada': 'Lion', 'Uttara Bhadrapada': 'Cow', 'Revati': 'Elephant',
+}
+GANA_BY_NAKSHATRA = {}
+for _n in ['Ashwini', 'Mrigashira', 'Punarvasu', 'Pushya', 'Hasta', 'Swati',
+           'Anuradha', 'Shravana', 'Revati']:
+    GANA_BY_NAKSHATRA[_n] = 'Devta'
+for _n in ['Bharani', 'Rohini', 'Ardra', 'Purva Phalguni', 'Uttara Phalguni',
+           'Purva Ashadha', 'Uttara Ashadha', 'Purva Bhadrapada', 'Uttara Bhadrapada']:
+    GANA_BY_NAKSHATRA[_n] = 'Manushya'
+for _n in ['Krittika', 'Ashlesha', 'Magha', 'Chitra', 'Vishakha', 'Jyeshtha',
+           'Mula', 'Dhanishta', 'Shatabhisha']:
+    GANA_BY_NAKSHATRA[_n] = 'Rakshasa'
+NADI_CYCLE = ['Adi', 'Madhya', 'Antya']
+
+VARNA_BY_SIGN = {}
+for _s in ['Cancer', 'Scorpio', 'Pisces']:
+    VARNA_BY_SIGN[_s] = 'Bramhin'
+for _s in ['Aries', 'Leo', 'Sagittarius']:
+    VARNA_BY_SIGN[_s] = 'Kshatriya'
+for _s in ['Taurus', 'Virgo', 'Capricorn']:
+    VARNA_BY_SIGN[_s] = 'Vaishya'
+for _s in ['Gemini', 'Libra', 'Aquarius']:
+    VARNA_BY_SIGN[_s] = 'Shudra'
+
+VASYA_WHOLE_SIGN = {
+    'Aries': 'Chatushpada', 'Taurus': 'Chatushpada', 'Gemini': 'Manav',
+    'Cancer': 'Jalachar', 'Leo': 'Vanachar', 'Virgo': 'Manav',
+    'Libra': 'Manav', 'Scorpio': 'Keeta', 'Aquarius': 'Manav',
+    'Pisces': 'Jalachar',
+}
+
+SIGN_ELEMENT = {}
+for _i, _s in enumerate(SIGNS):
+    SIGN_ELEMENT[_s] = ['Fire', 'Earth', 'Air', 'Water'][_i % 4]
+PAYA_BY_ELEMENT = {'Fire': 'Copper', 'Earth': 'Silver', 'Air': 'Iron', 'Water': 'Gold'}
+
+
+def vasya_of(sign, deg_in_sign_val):
+    """Vasya (Vashya) classification by Moon's Rashi. Sagittarius and Capricorn
+    are classically split by degree (0-15/15-30); other signs are whole-sign.
+    This does not attempt finer sub-degree splits some classical sources apply
+    beyond these two signs."""
+    if sign == 'Sagittarius':
+        return 'Manav' if deg_in_sign_val < 15 else 'Chatushpada'
+    if sign == 'Capricorn':
+        return 'Chatushpada' if deg_in_sign_val < 15 else 'Jalachar'
+    return VASYA_WHOLE_SIGN[sign]
+
+
+def hms_dot(hours):
+    h = int(hours) % 24
+    m_full = (hours - int(hours)) * 60
+    m = int(m_full)
+    s = int(round((m_full - m) * 60))
+    return f"{h:02d}.{m:02d}.{s:02d}"
+
+
+def y_m_d(years_float):
+    y = int(years_float)
+    months_frac = (years_float - y) * 12
+    m = int(months_frac)
+    d = int(round((months_frac - m) * 30))
+    return y, m, d
+
+
+def compute_avkahada_chakra(natal, birth_jd, lat, lon_geo, moon_lon):
+    lagna_sign = natal['ascendant']['sign']
+    moon = natal['planets']['Moon']
+    rasi_sign = moon['sign']
+    nak = moon['nakshatra']
+    pada = moon['pada']
+    nak_lord = moon['nakshatra_lord']
+
+    span = 360.0 / 27
+    idx = int(moon_lon // span) % 27
+    frac_elapsed = (moon_lon % span) / span
+    start_lord = NAKSHATRA_LORD[nak]
+    balance_years_raw = (1 - frac_elapsed) * DASHA_YEARS[start_lord]
+    by, bm, bd = y_m_d(balance_years_raw)
+
+    sun = natal['planets']['Sun']
+    ayanamsha_deg = swe.get_ayanamsa_ut(birth_jd)
+    trop_sun_lon = (sun['longitude'] + ayanamsha_deg) % 360
+    ecl_res, _ = swe.calc_ut(birth_jd, swe.ECL_NUT)
+    obliquity_mean = ecl_res[1]
+    gst = swe.sidtime(birth_jd)
+    lst = (gst + lon_geo / 15) % 24
+
+    return {
+        'paya_nakshatra_based': PAYA_BY_ELEMENT[SIGN_ELEMENT[moon['navamsa_sign']]],
+        'varna': VARNA_BY_SIGN[rasi_sign],
+        'yoni': YONI_BY_NAKSHATRA[nak],
+        'gana': GANA_BY_NAKSHATRA[nak],
+        'vasya': vasya_of(rasi_sign, deg_in_sign(moon['longitude'])),
+        'nadi': NADI_CYCLE[idx % 3],
+        'dasa_balance_at_birth': f"{PLANET_ABBR[start_lord]} {by} Y {bm} M {bd} D",
+        'lagna': lagna_sign,
+        'lagna_lord': PLANET_ABBR[SIGN_LORD[lagna_sign]],
+        'rasi': rasi_sign,
+        'rasi_lord': PLANET_ABBR[SIGN_LORD[rasi_sign]],
+        'nakshatra_pada': f"{nak} {pada}",
+        'nakshatra_lord': PLANET_ABBR[nak_lord],
+        'julian_day': int(birth_jd),
+        'sunsign_indian_sidereal': sun['sign'],
+        'sunsign_western_tropical': sign_of(trop_sun_lon),
+        'ayanamsha': dms3(ayanamsha_deg),
+        'ayanamsha_name': 'Lahiri',
+        'obliquity': dms3(obliquity_mean),
+        'sidereal_time_at_birth': hms_dot(lst),
+        'ghatak_malefics': None,  # not yet implemented - do not guess this one
+    }
+
 
 def setup():
     swe.set_sid_mode(swe.SIDM_LAHIRI)
@@ -102,6 +232,16 @@ def dms(deg_in_sign_val):
     m = int(m_full)
     s = int(round((m_full - m) * 60))
     return f"{d:02d}-{m:02d}-{s:02d}"
+
+
+def dms3(deg_val):
+    """Same as dms() but zero-padded to 3 digits (for 0-180 degree values
+    like ayanamsha/obliquity, matching standard kundli-software formatting)."""
+    d = int(deg_val)
+    m_full = (deg_val - d) * 60
+    m = int(m_full)
+    s = int(round((m_full - m) * 60))
+    return f"{d:03d}-{m:02d}-{s:02d}"
 
 
 def nakshatra_of(lon):
@@ -535,6 +675,7 @@ def main():
     sun_lon_birth = natal['planets']['Sun']['longitude']
     dasha_timeline = compute_dasha_timeline(moon_lon, birth_jd, cycles=1)
     panchang = compute_panchang(birth_jd, sun_lon_birth, moon_lon)
+    avkahada_chakra = compute_avkahada_chakra(natal, birth_jd, args.lat, args.lon, moon_lon)
 
     if args.now:
         dt = datetime.fromisoformat(args.now)
@@ -566,6 +707,7 @@ def main():
         'ayanamsha': 'Lahiri',
         'house_system': 'Whole Sign',
         'panchang_at_birth': panchang,
+        'avkahada_chakra': avkahada_chakra,
         'natal_chart': natal,
         'jaimini_chara_karakas': karakas,
         'vimshottari_dasha_timeline': dasha_timeline,

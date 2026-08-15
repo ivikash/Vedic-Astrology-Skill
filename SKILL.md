@@ -15,23 +15,31 @@ guessing.
 ## Step 1 - Collect birth details
 
 Ask only for what's needed, and only if not already given:
-1. First name or initials (optional)
-2. Date of birth, DD/MM/YYYY
-3. Exact local birth time with AM/PM
-4. Birthplace: city, state/region, country
-5. Whether the birth time is exact, approximate, or unknown
-6. Preferred pronouns (optional)
+1. Date of birth, DD/MM/YYYY
+2. Exact local birth time with AM/PM
+3. Birthplace: city, state/region, country
 
 Do not ask about career, money, relationships, family, or past events up front -
 that biases the audit. Wait for the chart before discussing any of that.
 
-If birth time is approximate or unknown: still compute the chart, but flag the
-Ascendant, D9, and house placements as lower-confidence, and skip minute-sensitive
-claims (exact house cusps, D10). Dasha timing from the Moon's nakshatra is
-unaffected by an inexact birth time as long as the date is right - only the
-Ascendant/houses degrade.
+If the user volunteers that the birth time is approximate or unknown (even
+though it's no longer asked by default): still compute the chart, but flag
+the Ascendant, D9, and house placements as lower-confidence, and skip
+minute-sensitive claims (exact house cusps, D10). Dasha timing from the
+Moon's nakshatra is unaffected by an inexact birth time as long as the date
+is right - only the Ascendant/houses degrade.
 
-## Step 2 - Resolve place to lat/lon/UTC offset
+## Step 2 - Chart style preference
+
+Default to **North Indian** style (house-fixed diamond) for every chart you
+print, without asking - most users don't have a preference and North Indian
+is the more common default. Only switch to **South Indian** style
+(sign-fixed grid) if the user asks for it, mentions it by name, or says
+North Indian is hard to read. Once a user states a preference in a
+conversation, keep using it for the rest of that conversation without
+re-asking.
+
+## Step 3 - Resolve place to lat/lon/UTC offset
 
 The script takes numeric `--lat`, `--lon`, `--utc-offset` - it does no geocoding.
 Resolve these yourself using your own knowledge (or WebFetch/search if unsure):
@@ -42,7 +50,7 @@ Resolve these yourself using your own knowledge (or WebFetch/search if unsure):
   multiple offset changes, India's brief 1941-45 offset). State the resolved
   offset and DST status explicitly before calculating.
 
-## Step 3 - Run the calculator
+## Step 4 - Run the calculator
 
 ```bash
 cd ~/workspace/astrology-skill
@@ -72,6 +80,14 @@ Then read the JSON (`Read` the `--out` file, or capture stdout if you omit
 
 - `panchang_at_birth` - Tithi, Karana, Nitya Yoga, and Vara (weekday) at
   birth, from local calendar date (not sunrise-based - a simplification).
+- `avkahada_chakra` - the standard birth-details summary panel (the same
+  fields AstroSage-style kundli software calls "Avkahada Chakra"): Paya,
+  Varna, Yoni, Gana, Vasya, Nadi (nakshatra/rashi classifications used in
+  guna-milan matching), Dasa Balance at birth (Y/M/D), Lagna + Lagna Lord,
+  Rasi + Rasi Lord, Nakshatra-Pada, Nakshatra Lord, Julian Day, SunSign
+  (Indian sidereal vs Western tropical), Ayanamsha value, Obliquity, and
+  Sidereal Time at birth. `ghatak_malefics` is deliberately `null` - that
+  technique isn't implemented (don't guess at it; say so if asked).
 - `natal_chart` - ascendant, `house_lords` (sign lord of each house), and all
   9 grahas with sign/degree/nakshatra/pada/house (Whole Sign)/`rules_houses`/
   retrograde/dignity/combustion/navamsa sign/**navamsa dignity**/
@@ -102,7 +118,37 @@ If a question needs something not in this JSON (e.g. a future year outside
 planetary aspects, or yoga detection, none of which are implemented), say so
 and extend `astro_calc.py` with a new function rather than estimating by hand.
 
-## Step 4 - Interpret, honestly
+## Step 5 - Always print the standard summary before interpreting
+
+**Before giving any interpretation, prediction, or answer to the user's
+actual question**, always print this summary block, in this order, for
+every fresh chart run (not just the first time in a conversation - repeat it
+whenever you recompute or re-derive the chart with different inputs):
+
+1. **Basic details** - name (if given), date, time, UTC offset, place,
+   lat/lon - i.e. the resolved inputs from Steps 1-3.
+2. **Tithi** (and the rest of `panchang_at_birth` - Karana, Nitya Yoga, Vara).
+3. **Avkahada Chakra** table - every field from the `avkahada_chakra` JSON
+   section, labeled the way that section's comment describes. Explicitly
+   note that `Ghatak (Malefics)` is not implemented rather than omitting it
+   silently.
+4. **The D1 chart** - rendered with:
+   ```bash
+   python3 scripts/render_chart.py --chart /tmp/chart.json --style north --divisional d1
+   ```
+   (`--style south` if that's the user's stated preference per Step 2).
+5. **The Dasha** - the full Mahadasha timeline (table form is fine) and the
+   `current_dasha` (Mahadasha/Antardasha/Pratyantardasha), clearly marked as
+   "current."
+
+Only after all five are printed should you move on to answering whatever the
+user actually asked (a life-events audit, a specific question, remedies,
+etc.) per Step 6. If the user asks a narrow follow-up in an existing
+conversation where this summary was already printed for the same chart,
+you don't need to reprint it - only reprint after a genuinely new/changed
+calculator run.
+
+## Step 6 - Interpret, honestly
 
 These rules held throughout this whole line of work and apply to every reading
 you produce from this skill's output:
@@ -135,7 +181,7 @@ you produce from this skill's output:
 - **Treat astrology as an interpretive tradition, not a proven predictive
   science**, and say so when giving readings, especially remedies (upay).
 
-## Step 5 - Remedies (Upaya), mantra, and why
+## Step 7 - Remedies (Upaya), mantra, and why
 
 `references/remedies.md` is the remedy knowledge base - Read it rather than
 generating upaya/mantra from memory. For each of the 9 grahas plus a
@@ -177,8 +223,13 @@ gemstone recommendation; point to an in-person practitioner for that.
   wrong separators): convert explicitly before calling the script - it expects
   strict `YYYY-MM-DD` and 24-hour `HH:MM`.
 - **A question needs a field the script doesn't compute** (D10, aspects,
-  yogas - see Step 3's note on gaps): say explicitly that this isn't
-  implemented yet rather than approximating it by hand.
+  yogas, Ghatak Malefics - see Step 4's note on gaps): say explicitly that
+  this isn't implemented yet rather than approximating it by hand.
+- **`render_chart.py` labels look cramped or cut off**: chart cells are
+  small by design (12 houses in a fixed diagram) - the script already drops
+  the combust `(c)` tag from in-chart labels and reports it in a footer line
+  instead; if you hit a similar overflow with a new label type, extend the
+  script's footer pattern rather than hand-editing its ASCII output.
 
 ## Notes on method
 
@@ -196,3 +247,13 @@ gemstone recommendation; point to an in-person practitioner for that.
   model is used automatically when Swiss Ephemeris data files aren't found, and
   it's accurate to arc-seconds for the 20th-21st century date range this skill
   is meant for.
+- `avkahada_chakra`'s Varna/Vasya/Yoni/Gana/Nadi/Paya are standard classical
+  nakshatra/rashi lookup tables (the same ones guna-milan/Ashtakoot matching
+  uses) - cross-checked against a real AstroSage Avkahada Chakra panel for
+  one birth chart and matched on every field. Vasya's classical treatment
+  splits Sagittarius and Capricorn by degree (0-15/15-30); the script
+  implements that split but doesn't attempt finer sub-degree splits some
+  sources apply elsewhere. Ayanamsha and Sidereal Time can differ from other
+  software by a couple of arc-seconds/seconds (apparent-vs-mean sidereal time
+  and slightly different Lahiri epoch conventions) - expected cross-software
+  variance, not an error.

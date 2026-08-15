@@ -75,6 +75,7 @@ One JSON object with:
 | Key | Contents |
 |---|---|
 | `panchang_at_birth` | Tithi, Karana, Nitya Yoga, Vara at birth |
+| `avkahada_chakra` | Paya/Varna/Yoni/Gana/Vasya/Nadi, Dasa Balance, Lagna/Rasi + lords, Nakshatra-Pada, Julian Day, SunSign (Indian/Western), Ayanamsha, Obliquity, Sidereal Time - the standard kundli "Avkahada Chakra" panel (`ghatak_malefics` is `null` - not implemented) |
 | `natal_chart` | Ascendant, house lords, all 9 grahas (sign, degree, nakshatra, pada, house, dignity, combustion, retrograde, navamsa sign/dignity/vargottama, houses ruled) |
 | `jaimini_chara_karakas` | Atmakaraka through Darakaraka |
 | `vimshottari_dasha_timeline` | Every Mahadasha for one full 120-year cycle, each with its 9 Antardashas attached |
@@ -95,10 +96,26 @@ than assuming a reading covers them:
 - Classical yoga detection (Gajakesari, Neecha-bhanga, Raja/Dhana yogas,
   Panch Mahapurusha, etc.)
 - Shadbala (strength scoring) or Ashtakavarga
+- Ghatak Chakra (malefic day/time timing technique) - `avkahada_chakra.ghatak_malefics`
+  is `null` on purpose rather than a guess
 - Gemstone recommendations (deliberately excluded - see
   `references/remedies.md`; this needs an in-person practitioner)
 - Geocoding of place names or historical timezone lookup (by design - see
   Usage above)
+
+## Chart rendering
+
+`scripts/render_chart.py` turns a calculator JSON file into an ASCII D1
+(Rasi) or D9 (Navamsa) chart, in North Indian (house-fixed diamond, default)
+or South Indian (sign-fixed grid) style:
+
+```bash
+python3 scripts/render_chart.py --chart chart.json --style north --divisional d1
+python3 scripts/render_chart.py --chart chart.json --style south --divisional d9
+```
+
+It only lays out what the calculator already computed - house/sign geometry
+is exact (see the vertex derivation in the script), not hand-drawn.
 
 ## Method notes
 
@@ -114,8 +131,12 @@ than assuming a reading covers them:
 
 ## Using this as a Claude Code skill
 
-This lives at `~/workspace/astrology-skill/` rather than `.claude/skills/`,
-so Claude Code won't auto-discover it as an invocable `/astrology-skill`
-command. To make it discoverable, copy or symlink this directory into
-`~/.claude/skills/astrology-skill` (global) or
-`<project>/.claude/skills/astrology-skill` (project-scoped).
+The canonical source lives here, at `~/workspace/astrology-skill/` (a git
+repo). It's also deployed as a global Claude Code skill at
+`~/.claude/skills/astrology-skill`, invocable as `/astrology-skill` - that
+copy is a plain sync of this directory (no `.git`), so after changing
+anything here, re-sync it:
+
+```bash
+rsync -a --exclude='.git' --exclude='.venv' ~/workspace/astrology-skill/ ~/.claude/skills/astrology-skill/
+```
