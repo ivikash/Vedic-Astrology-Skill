@@ -132,9 +132,10 @@ whenever you recompute or re-derive the chart with different inputs):
    section, labeled the way that section's comment describes. Explicitly
    note that `Ghatak (Malefics)` is not implemented rather than omitting it
    silently.
-4. **The D1 chart** - rendered with:
+4. **The D1 chart and the D9 (Navamsa) chart**, both - rendered with:
    ```bash
    python3 scripts/render_chart.py --chart /tmp/chart.json --style north --divisional d1
+   python3 scripts/render_chart.py --chart /tmp/chart.json --style north --divisional d9
    ```
    (`--style south` if that's the user's stated preference per Step 2).
 5. **The Dasha** - the full Mahadasha timeline (table form is fine) and the
