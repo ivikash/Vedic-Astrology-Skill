@@ -17,6 +17,10 @@ SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra',
 ABBR2 = {'Sun': 'Su', 'Moon': 'Mo', 'Mars': 'Ma', 'Mercury': 'Me',
          'Jupiter': 'Ju', 'Venus': 'Ve', 'Saturn': 'Sa', 'Rahu': 'Ra', 'Ketu': 'Ke'}
 SIGN3 = {s: s[:3] for s in SIGNS}
+HINDI_NAME = {'Sun': 'Surya', 'Moon': 'Chandra', 'Mars': 'Mangal',
+              'Mercury': 'Budh', 'Jupiter': 'Guru', 'Venus': 'Shukra',
+              'Saturn': 'Shani', 'Rahu': 'Rahu', 'Ketu': 'Ketu'}
+PLANET_ORDER = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu']
 
 
 def planet_label(name, info):
@@ -33,6 +37,32 @@ def combust_footer(chart):
     if not combust:
         return ''
     return '\nCombust (too close to Sun): ' + ', '.join(combust)
+
+
+def legend_table(chart, divisional):
+    natal = chart['natal_chart']
+    if divisional == 'd1':
+        lagna_sign = natal['ascendant']['sign']
+        house_key, sign_key = 'house_from_lagna', 'sign'
+    else:
+        lagna_sign = natal['navamsa_ascendant_sign']
+        house_key, sign_key = 'navamsa_house_from_navamsa_lagna', 'navamsa_sign'
+
+    lagna_label = "Lagna (Ascendant)"
+    lines = ['', 'Legend:', f"  {lagna_label:<20s} House {1:<3d} {lagna_sign}"]
+    for name in PLANET_ORDER:
+        info = natal['planets'][name]
+        h = info[house_key]
+        sign = info[sign_key]
+        flags = []
+        if divisional == 'd1' and info.get('retrograde'):
+            flags.append('Retrograde')
+        if divisional == 'd1' and info.get('combust'):
+            flags.append('Combust')
+        flag_str = f"   [{', '.join(flags)}]" if flags else ''
+        label = f"{HINDI_NAME[name]} ({name})"
+        lines.append(f"  {label:<20s} House {h:<3d} {sign}{flag_str}")
+    return '\n'.join(lines)
 
 
 def build_house_contents(chart, divisional):
@@ -101,13 +131,30 @@ def render_south(chart, divisional, title):
 # Exact geometry on a 16x16 unit square (see conversation derivation): 2 main
 # diagonals + inner diamond (side-midpoint quadrilateral) split it into 12
 # regions - houses 1/4/7/10 are 4-vertex kites at the cardinal points, the
-# other 8 are corner triangles. Centroids below are the average of each
-# region's vertices.
-CENTROIDS = {
-    1: (4, 8), 2: (1.33, 12), 3: (4, 14.67), 4: (8, 12), 5: (12, 14.67),
-    6: (14.67, 12), 7: (12, 8), 8: (14.67, 4), 9: (12, 1.33), 10: (8, 4),
-    11: (4, 1.33), 12: (1.33, 4),
+# other 8 are corner triangles.
+#
+# Real North Indian charts (verified against an AstroSage panel) print the
+# RASHI NUMBER (1=Aries..12=Pisces) of whichever sign occupies each house
+# near the region's center-ward tip, and planet abbreviations further out
+# toward its outer (square-border) edge - not both stacked at the centroid,
+# and with no separate "ASC" text (house 1 is always the fixed top region by
+# convention). OUTER_ANCHOR is each region's own border-touching vertex/
+# vertices (a side-midpoint for the 4 kite houses; the average of a square
+# corner + adjacent side-midpoint for the 8 triangle houses).
+CENTER = (8, 8)
+OUTER_ANCHOR = {
+    1: (0, 8), 2: (0, 12), 3: (4, 16), 4: (8, 16), 5: (12, 16),
+    6: (16, 12), 7: (16, 8), 8: (16, 4), 9: (12, 0), 10: (8, 0),
+    11: (4, 0), 12: (0, 4),
 }
+
+
+def _lerp(a, b, t):
+    return (a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t)
+
+
+NUMBER_POS = {h: _lerp(CENTER, OUTER_ANCHOR[h], 0.25) for h in range(1, 13)}
+PLANET_POS = {h: _lerp(CENTER, OUTER_ANCHOR[h], 0.65) for h in range(1, 13)}
 UNIT = 16
 ROW_SCALE = 2
 COL_SCALE = 4
@@ -162,18 +209,18 @@ def render_north(chart, divisional, title):
                 grid[R][cc] = ch
 
     for h in range(1, 13):
-        r, c = CENTROIDS[h]
         sign = sign_for_house(lagna_sign, h)
-        lines = [SIGN3[sign]]
-        if h == 1:
-            lines.append('ASC')
+        nr, nc = NUMBER_POS[h]
+        place(str(SIGNS.index(sign) + 1), nr, nc)
         if houses[h]:
-            lines.append(','.join(houses[h]))
-        for i, line in enumerate(lines):
-            place(line, r + (i - (len(lines) - 1) / 2) * 0.9, c)
+            pr, pc = PLANET_POS[h]
+            lines = [','.join(houses[h][i:i + 2]) for i in range(0, len(houses[h]), 2)]
+            for i, line in enumerate(lines):
+                place(line, pr + (i - (len(lines) - 1) / 2) * 0.9, pc)
 
     body = '\n'.join(''.join(row) for row in grid)
-    return title + '\n\n' + body
+    lagna_line = f"House 1 (Lagna/Ascendant) = {lagna_sign} (rashi {SIGNS.index(lagna_sign) + 1})"
+    return title + '\n' + lagna_line + '\n\n' + body
 
 
 def main():
@@ -197,6 +244,7 @@ def main():
         footer = combust_footer(chart)
         if footer:
             print(footer)
+    print(legend_table(chart, args.divisional))
 
 
 if __name__ == '__main__':
