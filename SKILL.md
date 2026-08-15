@@ -159,14 +159,25 @@ whenever you recompute or re-derive the chart with different inputs):
    `this_month_fast_planets`. Frame as thematic texture for the day, same
    confidence caveat as monthly, one level more specific.
 
-**Format items 6-8 as an executive summary, not prose paragraphs**: lead
-with 2-3 sentences of headline takeaway, then a table - one row per
-life-area (for item 6) or per notable transit (for items 7-8) - with columns
-`Area | Current signal | Confidence`. Keep each cell to a short phrase (house
-+ lord + what's touching it), not the full chain of reasoning. State "no
-signal" as a normal one-line row, not an apologetic aside. Offer the full
-reasoning behind any specific row if asked, rather than including it by
-default - the summary's job is to be scannable first.
+**Format items 6-8 as one short paragraph per life-area (or per notable
+transit for items 7-8), not a table.** Each paragraph leads with the finding
+first, then the reasoning that supports it - the update, then why, in that
+order, every time. Write the finding as a plain claim ("no dasha lord touches
+the 7th house" is itself a finding, not a gap to apologize for), then back it
+with the specific field it traces to.
+
+Hold every paragraph to this writing bar, no exceptions:
+- **Active voice, clear actor.** "Mars rules the 6th house" not "the 6th
+  house is ruled by Mars."
+- **No em-dash characters.** Use a period, comma, or a spaced hyphen " - ".
+- **No hedging or superlative words** (should, might, could, generally,
+  significant, robust, comprehensive, seamless, etc.) - state the finding or
+  state that there's no finding; don't soften either one.
+- **Quantify what the data gives you** - exact dates, house numbers, degrees
+  - instead of vague words like "narrow window" or "some transits."
+- **Cut fluff.** A tight two-sentence paragraph beats a padded five-sentence
+  one. If a life-area genuinely has nothing behind it, one sentence saying so
+  is the whole paragraph.
 
 Only after all eight are printed should you move on to answering whatever
 else the user actually asked (a life-events audit, a specific question,
